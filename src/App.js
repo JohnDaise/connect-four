@@ -49,16 +49,16 @@ class App extends React.Component {
     console.log(board);
     
     let firstCheck = this.checkAll(board);
-    // let firstCheck = this.checkAlmostVertical(board)
+    let secondCheck = this.checkAlmost(board);
+
     // check where row or col or diagonal has 3 pieces
+    console.log(secondCheck);
     
     if (firstCheck === this.state.player1) {
       this.setState({ board, gameOver: true, message: 'Player 1 (red) wins!' });
       return;
     }  
 
-
-    console.log(firstCheck);
     // if firstCheck is 
     // then c value should be move that would block
 
@@ -214,6 +214,20 @@ class App extends React.Component {
       }
     }
   }
+
+  checkAlmostHorizontal(board) {
+    // Check only if column is 3 or less
+    for (let r = 0; r < 6; r++) {
+      for (let c = 0; c < 4; c++) {
+        if (board[r][c]) {
+          if (board[r][c] === board[r][c + 1] && 
+              board[r][c] === board[r][c + 2]) {
+            return board[r][c];
+          }
+        }
+      }
+    }
+  }
   
   checkDiagonalRight(board) {
     // Check only if row is 3 or greater AND column is 3 or less
@@ -254,6 +268,12 @@ class App extends React.Component {
       }
     }
     return 'draw';    
+  }
+
+  // TODO: modify this so prioritizes returning 2 for a possible computer win
+  checkAlmost(board) {
+    return this.checkAlmostVertical(board) || this.checkAlmostHorizontal(board);
+    // || this.checkDiagonalRight(board) || this.checkDiagonalLeft(board) || 
   }
   
   checkAll(board) {
