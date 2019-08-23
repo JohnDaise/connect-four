@@ -1,6 +1,6 @@
 import React from 'react';
 import './App.css';
-import { Button, Container } from 'semantic-ui-react';
+import { Container } from 'semantic-ui-react';
 import Row from './Components/Row';
 import io from 'socket.io-client';
 
@@ -45,9 +45,31 @@ class App extends React.Component {
 
 
   computerMove = () => {
+    let board = this.state.board;
+
+    for (let r = 5; r >= 0; r--) {
+      if (!board[r][0]) {
+        board[r][0] = this.state.player2;
+        break;
+      }
+    }
+
+    let result = this.checkAll(board);
+  
+    if (result === this.state.player2) {
+      this.setState({ board, gameOver: true, message: 'Computer wins!' });
+    }
+
+    if (result === 'draw') {
+      this.setState({ board, gameOver: true, message: 'Draw game.' });
+    } 
+
     if(this.state.gameOver) {
       return;
     }
+
+    
+    // console.log(this.state);
     // this.play();
 
     // program computer to be smarter
@@ -82,13 +104,8 @@ class App extends React.Component {
 
 
 
-    let board = this.state.board;
-    for (let r = 5; r >= 0; r--) {
-      if (!board[r][0]) {
-        board[r][0] = this.state.player2;
-        break;
-      }
-    }
+  
+   
 
 
     
@@ -117,14 +134,19 @@ class App extends React.Component {
       let result = this.checkAll(board);
       if (result === this.state.player1) {
         this.setState({ board, gameOver: true, message: 'Player 1 (red) wins!' });
-      } else if (result === this.state.player2) {
+      }  
+      
+      if (result === this.state.player2) {
         this.setState({ board, gameOver: true, message: 'Computer wins!' });
-      } else if (result === 'draw') {
+      } 
+      
+      if (result === 'draw') {
         this.setState({ board, gameOver: true, message: 'Draw game.' });
-      } else {
-        this.computerMove();
-        this.setState({ board, currentPlayer: this.togglePlayer() });
-      }
+      } 
+        
+      this.setState({ board, currentPlayer: this.togglePlayer() });
+      this.computerMove();
+      
     } else {
       this.setState({ message: 'Game over. Please start a new game.' });
     }
@@ -207,9 +229,9 @@ class App extends React.Component {
     return this.checkVertical(board) || this.checkDiagonalRight(board) || this.checkDiagonalLeft(board) || this.checkHorizontal(board) || this.checkDraw(board);
   }
   
-  componentWillMount() {
-    this.initBoard();
-  }
+  // componentWillMount() {
+  //   this.initBoard();
+  // }
   
   render() {
     return (
