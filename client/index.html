@@ -1,0 +1,23 @@
+Hello world asdfjkl;
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+  var socket = io();
+
+  var random = Math.random()
+
+  var happy = function() {
+    socket.emit('happy',{
+      reason: 'its my birthday ' + random
+    });
+  }
+
+
+  socket.on('newBoard', function(data){
+      console.log(data.msg);
+      // clear board
+      // fill board using data
+  });
+</script>
+
+<button onclick="happy()">Happy</button>
