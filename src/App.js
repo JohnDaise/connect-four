@@ -20,6 +20,10 @@ class App extends React.Component {
       message: ''
     };
   }
+
+  componentDidMount(){
+    this.initBoard(); 
+  }
   
   // Starts new game
   initBoard() {
@@ -44,15 +48,39 @@ class App extends React.Component {
     if(this.state.gameOver) {
       return;
     }
+    // this.play();
 
     // program computer to be smarter
     // select c in priority
 
-    let options = [];
-    options[0] = [];  // computer wins
-    options[1] = [];  // block player from winning
-    options[2] = []; // random move
-    options[3] = []; // give away win 
+    // let options = [];
+    // options[0] = [];  // computer wins
+    // options[1] = [];  // block player from winning
+    // options[2] = []; // random move
+    // options[3] = []; // give away win 
+
+    // // loop thru each column
+    // let cell;
+    // for (let r = 5; r >= 0; r--) { 
+    //   // if column full go to the next column
+      
+      
+    // }
+
+
+    // let c; 
+
+    // if (options[0]>0) {
+    //   c = options[0][0]; // just picks the first option to win
+    // } else if (options[1]>0) {
+    //   c = options[1][0]; 
+    // } else if (options[2]>0) {
+    //   c = options[2][0]; 
+    // } else if (options[3]>0) {
+    //   c = options[3][0]; 
+    // }
+
+
 
     let board = this.state.board;
     for (let r = 5; r >= 0; r--) {
@@ -84,7 +112,7 @@ class App extends React.Component {
         }
       }
 
-      this.computerMove();
+      // this.computerMove();
       // Check status of board
       let result = this.checkAll(board);
       if (result === this.state.player1) {
@@ -94,8 +122,8 @@ class App extends React.Component {
       } else if (result === 'draw') {
         this.setState({ board, gameOver: true, message: 'Draw game.' });
       } else {
+        this.computerMove();
         this.setState({ board, currentPlayer: this.togglePlayer() });
-        // this.computerMove();
       }
     } else {
       this.setState({ message: 'Game over. Please start a new game.' });
