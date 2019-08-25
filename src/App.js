@@ -2,7 +2,6 @@ import React from 'react';
 import './App.css';
 import { Container } from 'semantic-ui-react';
 import Row from './Components/Row';
-import io from 'socket.io-client';
 
 
 
@@ -12,12 +11,13 @@ class App extends React.Component {
 
 
     this.state = {
-      player1: 1,
-      player2: 2,
-      currentPlayer: null,
+      blockingMoves: [],
       board: [],
+      currentPlayer: null,
       gameOver: false,
-      message: ''
+      message: '',
+      player1: 1,
+      player2: 2
     };
   }
 
@@ -46,29 +46,46 @@ class App extends React.Component {
 
   computerMove = () => {
     let board = this.state.board;
-    console.log(board);
-    
     let firstCheck = this.checkAll(board);
     let secondCheck = this.checkAlmost(board);
-
+    let blockingMoves = this.state.blockingMoves;
     // check where row or col or diagonal has 3 pieces
-    console.log(secondCheck);
     
     if (firstCheck === this.state.player1) {
       this.setState({ board, gameOver: true, message: 'Player 1 (red) wins!' });
       return;
     }  
 
-    // if firstCheck is 
-    // then c value should be move that would block
+  if (secondCheck === this.state.player1) {
+    // BLOCK:
+    //   for (let i=0; i<blockingMoves.length; i++) {
+    //     if (blockingMoves[i]['c']) {
+    //       // loop below executes computer's move
+    //       for (let r = 5; r >= 0; r--) {
+    //         if (!board[r][blockingMoves[i]['c']]) {
+    //           board[r][blockingMoves[i]['c']] = this.state.player2;
+    //           break BLOCK;
+    //         }
+    //       }
+    //     }
+    //   }
+      // secondCheck = null;
+      console.log('block!');
+      this.setState({ blockingMoves:[], board, currentPlayer: this.togglePlayer() });
+      return;
+    } 
+    // TODO: RANDOM COMPUTER MOVE
+      for (let r = 5; r >= 0; r--) {
+        if (!board[r][0]) {
+          board[r][0] = this.state.player2;
+          break;
+        }
+      }
+      console.log('comp move complete');
+  
 
     // TODO: change decided move by computer below
-    for (let r = 5; r >= 0; r--) {
-      if (!board[r][0]) {
-        board[r][0] = this.state.player2;
-        break;
-      }
-    }
+
 
     // checks result after move
     let result = this.checkAll(board);
@@ -84,49 +101,9 @@ class App extends React.Component {
     if(this.state.gameOver) {
       return;
     }
+    this.setState({ blockingMoves:[], board, currentPlayer: this.togglePlayer() });
 
-    
-    // console.log(this.state);
-    // this.play();
-
-    // program computer to be smarter
-    // select c in priority
-
-    // let options = [];
-    // options[0] = [];  // computer wins
-    // options[1] = [];  // block player from winning
-    // options[2] = []; // random move
-    // options[3] = []; // give away win 
-
-    // // loop thru each column
-    // let cell;
-    // for (let r = 5; r >= 0; r--) { 
-    //   // if column full go to the next column
-      
-      
-    // }
-
-
-    // let c; 
-
-    // if (options[0]>0) {
-    //   c = options[0][0]; // just picks the first option to win
-    // } else if (options[1]>0) {
-    //   c = options[1][0]; 
-    // } else if (options[2]>0) {
-    //   c = options[2][0]; 
-    // } else if (options[3]>0) {
-    //   c = options[3][0]; 
-    // }
-
-
-
-  
-   
-
-
-    
-    this.setState({ board, currentPlayer: this.togglePlayer() });
+    // end of computerMove
   }
   
   togglePlayer() {
@@ -139,30 +116,30 @@ class App extends React.Component {
     if (!this.state.gameOver) {
       // Place piece on board
       let board = this.state.board;
+  
       for (let r = 5; r >= 0; r--) {
         if (!board[r][c]) {
           board[r][c] = this.state.player1;
           break;
         }
       }
-
-      // this.computerMove();
+      
       // Check status of board
       let result = this.checkAll(board);
       if (result === this.state.player1) {
         this.setState({ board, gameOver: true, message: 'Player 1 (red) wins!' });
       }  
       
-      if (result === this.state.player2) {
-        this.setState({ board, gameOver: true, message: 'Computer wins!' });
-      } 
+      // if (result === this.state.player2) {
+      //   this.setState({ board: newBoard, gameOver: true, message: 'Computer wins!' });
+      // } 
       
       if (result === 'draw') {
         this.setState({ board, gameOver: true, message: 'Draw game.' });
       } 
-        
+
       this.setState({ board, currentPlayer: this.togglePlayer() });
-      this.computerMove();
+      this.computerMove(board);
       
     } else {
       this.setState({ message: 'Game over. Please start a new game.' });
@@ -193,7 +170,7 @@ class App extends React.Component {
         if (board[r][c]) {
           if (board[r][c] === board[r - 1][c] &&
               board[r][c] === board[r - 2][c]) {
-            return board[r][c];    
+            return board[r][c];    // set coordinates above and below in state array almost coordinates
           }
         }
       }
@@ -203,7 +180,7 @@ class App extends React.Component {
   checkHorizontal(board) {
     // Check only if column is 3 or less
     for (let r = 0; r < 6; r++) {
-      for (let c = 0; c < 4; c++) {
+      for (let c = 0; c < 7; c++) {
         if (board[r][c]) {
           if (board[r][c] === board[r][c + 1] && 
               board[r][c] === board[r][c + 2] &&
@@ -215,15 +192,43 @@ class App extends React.Component {
     }
   }
 
-  checkAlmostHorizontal(board) {
+  checkAlmostHorizontal() {
     // Check only if column is 3 or less
+    let blockingMoves = this.state.blockingMoves;
+    let board = this.state.board;
+    console.log(board);
     for (let r = 0; r < 6; r++) {
-      for (let c = 0; c < 4; c++) {
+      for (let c = 0; c < 7; c++) {
         if (board[r][c]) {
+          if(board[r][c] === board[r][c+1]) {
+            if( !board[r][c+2] && (board[r][c+3]=== board[r][c])) {
+              return board[r][c]; 
+            } else if ((board[r][c+2] === board[r][c]) && (!board[r][c+3])) {
+              return board[r][c]; 
+            } else if (!board[r][c-1] && (board[r][c-2] === board[r][c])) {
+              return board[r][c]; 
+            } else if ((board[r][c-1] === board[r][c]) && !board[r][c-2]) {
+              return board[r][c]; 
+            }
+            // one above is null // two above is board[r][c]
+            // one above is board[r][c] and two above is null
+            // one below is null // two below is board[r][c]
+            // one below is board[r][c] and two below is null
+          }
+
+          // if ( ) {
+          //   return board[r][c];
+          // }
+
           if (board[r][c] === board[r][c + 1] && 
               board[r][c] === board[r][c + 2]) {
+              // adds moves that would make horizontal block
+              // blockingMoves.push({r: r, c: c-1});
+              // blockingMoves.push({r: r, c: c+3});
             return board[r][c];
           }
+
+
         }
       }
     }
@@ -232,7 +237,7 @@ class App extends React.Component {
   checkDiagonalRight(board) {
     // Check only if row is 3 or greater AND column is 3 or less
     for (let r = 3; r < 6; r++) {
-      for (let c = 0; c < 4; c++) {
+      for (let c = 0; c < 7; c++) {
         if (board[r][c]) {
           if (board[r][c] === board[r - 1][c + 1] &&
               board[r][c] === board[r - 2][c + 2] &&
@@ -271,8 +276,9 @@ class App extends React.Component {
   }
 
   // TODO: modify this so prioritizes returning 2 for a possible computer win
-  checkAlmost(board) {
-    return this.checkAlmostVertical(board) || this.checkAlmostHorizontal(board);
+  checkAlmost() {
+    let board = this.state.board;
+    return this.checkAlmostHorizontal(board);
     // || this.checkDiagonalRight(board) || this.checkDiagonalLeft(board) || 
   }
   
@@ -309,13 +315,3 @@ class App extends React.Component {
 
 export default App;
 
-// let socket;
-   
-// sendBoard(value) {
-//   socket.emit('chat message', value);
-// };
-
-
-// if(!socket) {
-//    socket = io(':3001');
-// };
