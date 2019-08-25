@@ -49,6 +49,7 @@ class App extends React.Component {
     let firstCheck = this.checkAll(board);
     let secondCheck = this.checkAlmost(board);
     let blockingMoves = this.state.blockingMoves;
+    console.log(blockingMoves);
     // check where row or col or diagonal has 3 pieces
     
     if (firstCheck === this.state.player1) {
@@ -57,19 +58,20 @@ class App extends React.Component {
     }  
 
   if (secondCheck === this.state.player1) {
-    // BLOCK:
-    //   for (let i=0; i<blockingMoves.length; i++) {
-    //     if (blockingMoves[i]['c']) {
-    //       // loop below executes computer's move
-    //       for (let r = 5; r >= 0; r--) {
-    //         if (!board[r][blockingMoves[i]['c']]) {
-    //           board[r][blockingMoves[i]['c']] = this.state.player2;
-    //           break BLOCK;
-    //         }
-    //       }
-    //     }
-    //   }
-      // secondCheck = null;
+    BLOCK:
+      for (let i=0; i<blockingMoves.length; i++) {
+        if (blockingMoves[i]['c']) {
+          // loop below executes computer's move
+          for (let r = 5; r >= 0; r--) {
+            if (!board[r][blockingMoves[i]['c']]) {
+              board[r][blockingMoves[i]['c']] = this.state.player2;
+              break BLOCK;
+            }
+          }
+        }
+      }
+      secondCheck = null;
+      
       console.log('block!');
       this.setState({ blockingMoves:[], board, currentPlayer: this.togglePlayer() });
       return;
@@ -196,29 +198,31 @@ class App extends React.Component {
     // Check only if column is 3 or less
     let blockingMoves = this.state.blockingMoves;
     let board = this.state.board;
-    console.log(board);
+
     for (let r = 0; r < 6; r++) {
       for (let c = 0; c < 7; c++) {
         if (board[r][c]) {
+          // checks for a horizontal pair
           if(board[r][c] === board[r][c+1]) {
             if( !board[r][c+2] && (board[r][c+3]=== board[r][c])) {
+              blockingMoves.push({r:r, c:c+2});
               return board[r][c]; 
             } else if ((board[r][c+2] === board[r][c]) && (!board[r][c+3])) {
+              blockingMoves.push({r:r, c:c+3});
               return board[r][c]; 
             } else if (!board[r][c-1] && (board[r][c-2] === board[r][c])) {
+              blockingMoves.push({r:r, c:c-1});
               return board[r][c]; 
             } else if ((board[r][c-1] === board[r][c]) && !board[r][c-2]) {
+              blockingMoves.push({r:r, c:c-2});
               return board[r][c]; 
             }
+            // horizontal block scenarios
             // one above is null // two above is board[r][c]
             // one above is board[r][c] and two above is null
             // one below is null // two below is board[r][c]
             // one below is board[r][c] and two below is null
           }
-
-          // if ( ) {
-          //   return board[r][c];
-          // }
 
           if (board[r][c] === board[r][c + 1] && 
               board[r][c] === board[r][c + 2]) {
