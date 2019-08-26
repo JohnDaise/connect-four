@@ -69,6 +69,20 @@ class App extends React.Component {
     }  
 
 
+    if(winningMove.length>0) { 
+      let finalMoveCol = winningMove[0]['c'];
+       for (let r = 5; r >= 0; r--) {
+        if (!board[r][finalMoveCol]) {
+          board[r][finalMoveCol] = this.state.player2;
+          break;
+        }
+      }
+      this.checkAll(board);
+     }
+
+  
+
+
   if (secondCheck === this.state.player1) {
 
     // for(let i = 0; i<winningMove.length; i++){
@@ -77,24 +91,10 @@ class App extends React.Component {
     //   board[row][col] = this.state.player2;
     //   break;
     // }
-      if(winningMove.length>0) { 
-        //  board[winningMove[0]['r']][winningMove[0]['c']] = this.state.player2;
-        let finalMoveCol = winningMove[0]['c'];
-         for (let r = 5; r >= 0; r--) {
-          if (!board[r][finalMoveCol]) {
-            board[r][finalMoveCol] = this.state.player2;
-            break;
-          }
-        }
-       }
-
-    
-
 
     BLOCK:
       for (let i=0; i<blockingMoves.length; i++) {
         if (blockingMoves[i]['c']) {
-          // loop below executes computer's move
           for (let r = 5; r >= 0; r--) {
             if (!board[r][blockingMoves[i]['c']]) {
               board[r][blockingMoves[i]['c']] = this.state.player2;
@@ -166,10 +166,6 @@ class App extends React.Component {
         this.setState({ board, gameOver: true, message: 'Player 1 (red) wins!' });
       }  
       
-      // if (result === this.state.player2) {
-      //   this.setState({ board: newBoard, gameOver: true, message: 'Computer wins!' });
-      // } 
-      
       if (result === 'draw') {
         this.setState({ board, gameOver: true, message: 'Draw game.' });
       } 
@@ -211,19 +207,23 @@ class App extends React.Component {
              (board[r][c] === board[r-2][c]) && 
              !board[r-3][c]) {
              // vertical win scenario
-            if (board[r-1][c] === 2) {
+            if (board[r][c] === 2) {
               winningMove.push({r:r-3, c:c});
               return board[r][c];
             } 
+
             if (board[r][c] === 1) {
               console.log('check 1');
               blockingMoves.push({r:r-3, c:c});
               return board[r][c];
             } 
+
           }
         }
       }      
     }
+    this.checkVertical(board); 
+  
   }
   
   checkHorizontal(board) {
@@ -385,7 +385,6 @@ class App extends React.Component {
     return 'draw';    
   }
 
-  // TODO: modify this so prioritizes returning 2 for a possible computer win
   checkAlmost() {
     let board = this.state.board;
     return this.checkAlmostHorizontal(board) || this.checkAlmostVertical(board);
