@@ -42,18 +42,17 @@ class App extends React.Component {
     });
   }
 
-  makeCounter = (() => {
-    let num = 0;
-    return () => num++;
-  })();
-
+  getRandomNum = (() => {
+    return Math.floor(Math.random() * 7);
+  });
+ 
 
   computerMove = () => {
     let board = this.state.board;
-    // let randomMove = Math.floor(Math.random() * 6);
-
-    let randomMove = this.makeCounter();
+    let randomMove = this.getRandomNum();
     
+    // if column is full then choose a different randomNum
+    if (!board[0][randomMove]){
  // TEST horiz win
     let firstCheck = this.checkAll(board);
     let secondCheck = this.checkAlmost(board);
@@ -69,16 +68,27 @@ class App extends React.Component {
       return;
     }  
 
-    console.log('secondCheck', secondCheck);
-  if (secondCheck === this.state.player2) {
-    console.log('leettsss goooo!');
-    // if (!board[r][winningMove[0]['c']]) {
-    //    board[r][winningMove[0]['c']] = this.state.player2;
-    //  }
-  }
-
 
   if (secondCheck === this.state.player1) {
+
+    // for(let i = 0; i<winningMove.length; i++){
+    //   let row = winningMove[i]['r'];
+    //   let col = winningMove[i]['c'];
+    //   board[row][col] = this.state.player2;
+    //   break;
+    // }
+      if(winningMove.length>0) { 
+        //  board[winningMove[0]['r']][winningMove[0]['c']] = this.state.player2;
+        let finalMoveCol = winningMove[0]['c'];
+         for (let r = 5; r >= 0; r--) {
+          if (!board[r][finalMoveCol]) {
+            board[r][finalMoveCol] = this.state.player2;
+            break;
+          }
+        }
+       }
+
+    
 
 
     BLOCK:
@@ -94,10 +104,7 @@ class App extends React.Component {
         }
       }
       
-      
-      console.log('block!');
-      
-      this.setState({ blockingMoves:[], board, currentPlayer: this.togglePlayer() });
+      this.setState({ blockingMoves:[], winningMove: [], board, currentPlayer: this.togglePlayer() });
       return;
     } 
 
@@ -109,10 +116,6 @@ class App extends React.Component {
           break;
         }
       }
-      console.log('comp move complete');
-  
-
-    // TODO: change decided move by computer below
 
 
     // checks result after move
@@ -134,6 +137,9 @@ class App extends React.Component {
     
     this.setState({ blockingMoves:[], board, currentPlayer: this.togglePlayer() });
     // end of computerMove
+  } else {
+    this.computerMove();
+  }
   }
   
   togglePlayer() {
@@ -181,11 +187,11 @@ class App extends React.Component {
   checkVertical(board) {
     // Check only if row is 3 or greater
     for (let r = 3; r < 6; r++) {
-      for (let c = 0; c < 7; c++) {
+    for (let c = 0; c < 7; c++) {
         if (board[r][c]) {
-          if (board[r][c] === board[r - 1][c] &&
-              board[r][c] === board[r - 2][c] &&
-              board[r][c] === board[r - 3][c]) {
+          if ((board[r][c] === board[r - 1][c]) &&
+              (board[r][c] === board[r - 2][c]) &&
+              (board[r][c] === board[r - 3][c])) {
             return board[r][c];    
           }
         }
@@ -194,28 +200,28 @@ class App extends React.Component {
   }
 
   checkAlmostVertical() {
-    // Check only if row is 3 or greater
     let blockingMoves = this.state.blockingMoves;
     let winningMove = this.state.winningMove;
     let board = this.state.board;
-
-    for (let r = 3; r < 6; r++) {
-      for (let c = 0; c < 7; c++) {
-
+   
+    for (let r = 3; r < 6; r++) {  
+    for (let c = 0; c < 7; c++) {
+        if (board[r][c]) {
           if((board[r][c] === board[r-1][c]) && 
-            (board[r-1][c] === board[r-2][c]) && 
-            !board[r-3][c]) {
+             (board[r][c] === board[r-2][c]) && 
+             !board[r-3][c]) {
              // vertical win scenario
-            if (board[r][c] === 2) {
+            if (board[r-1][c] === 2) {
               winningMove.push({r:r-3, c:c});
               return board[r][c];
             } 
-            // vertical block scenario
             if (board[r][c] === 1) {
+              console.log('check 1');
               blockingMoves.push({r:r-3, c:c});
               return board[r][c];
             } 
           }
+        }
       }      
     }
   }
@@ -241,52 +247,39 @@ class App extends React.Component {
     let winningMove = this.state.winningMove;
     let board = this.state.board;
 
+    // loop to look for winning moves
     for (let r = 0; r < 6; r++) {
       for (let c = 0; c < 7; c++) {
-       
+        if (!!board[r][c] && (board[r][c] === 2)) {
           // checks for a horizontal pair
-          if(board[r][c]) {
           if(board[r][c] === board[r][c+1]) {
-            if(!board[r][c+2] && (board[r][c+3] === board[r][c])) {
-              // put condition for winning move here
-              if (board[r][c] === 2) {
-                winningMove.push({r:r, c:c+2});
-              } else {
-                blockingMoves.push({r:r, c:c+2});
-              }
+            if( !board[r][c+2] && (board[r][c+3] === board[r][c])) {
+              winningMove.push({r:r, c:c+2});
               return board[r][c]; 
-            } else if ((board[r][c]) === board[r][c+2]  && (!board[r][c+3])) {
+            }  
+            
+            if ((board[r][c+2] === board[r][c]) && (!board[r][c+3])) {
               if (c <= 3) {
-                if (board[r][c] === 2) {
-                  console.log('hey!');
-                  winningMove.push({r:r, c:c+3});
-                } else {
-                  blockingMoves.push({r:r, c:c+3});
-                }
+                winningMove.push({r:r, c:c+3});
                 return board[r][c]; 
               }
               if (c === 4) {
-                if (board[r][c] === 2) {
-                  winningMove.push({r:r, c:c-1});
-                } else {
-                  blockingMoves.push({r:r, c:c-1});
-                }
+                winningMove.push({r:r, c:c-1});
                 return board[r][c]; 
               }
-            } else if (!board[r][c-1] && (board[r][c-2] === board[r][c])) {
-              if (board[r][c] === 2) {
-                winningMove.push({r:r, c:c-1})
-              } else {
-                blockingMoves.push({r:r, c:c-1});
+            }  
+            if (!board[r][c-1] && (board[r][c-2] === board[r][c])) {
+              if(c>=2) {
+                winningMove.push({r:r, c:c-1});
+                return board[r][c]; 
               }
-              return board[r][c]; 
-            } else if ((board[r][c-1] === board[r][c]) && !board[r][c-2]) {
-              if (board[r][c] === 2) {
+            } 
+            
+            if ((board[r][c-1] === board[r][c]) && !board[r][c-2]) {
+              if(c>=2) {
                 winningMove.push({r:r, c:c-2});
-              } else {
-                blockingMoves.push({r:r, c:c-2});
-              }
               return board[r][c]; 
+              }
             }
             // horizontal block scenarios
             // one above pair is null // two above is board[r][c]
@@ -294,14 +287,50 @@ class App extends React.Component {
             // one below is null // two below is board[r][c]
             // one below is board[r][c] and two below is null
           }
+      }
+     }
+    }
 
-          // if (board[r][c] === board[r][c + 1] && 
-          //     board[r][c] === board[r][c + 2]) {
-          //     // adds moves that would make horizontal block
-          //     // blockingMoves.push({r: r, c: c-1});
-          //     // blockingMoves.push({r: r, c: c+3});
-          //   return board[r][c];
-          // }
+  // loop to look for blocks
+    for (let r = 0; r < 6; r++) {
+      for (let c = 0; c < 7; c++) {
+        if (!!board[r][c] && (board[r][c] === 1)) {
+          // checks for a horizontal pair
+          if(board[r][c] === board[r][c+1]) {
+            if( !board[r][c+2] && (board[r][c+3] === board[r][c])) {
+              blockingMoves.push({r:r, c:c+2});
+              return board[r][c]; 
+            }  
+            
+            if ((board[r][c+2] === board[r][c]) && (!board[r][c+3])) {
+              if (c <= 3) {
+                blockingMoves.push({r:r, c:c+3});
+                return board[r][c]; 
+              }
+              if (c === 4) {
+                blockingMoves.push({r:r, c:c-1});
+                return board[r][c]; 
+              }
+            }  
+            if (!board[r][c-1] && (board[r][c-2] === board[r][c])) {
+              if(c>=2) {
+                blockingMoves.push({r:r, c:c-1});
+                return board[r][c]; 
+              }
+            } 
+            
+            if ((board[r][c-1] === board[r][c]) && !board[r][c-2]) {
+              if(c>=2) {
+              blockingMoves.push({r:r, c:c-2});
+              return board[r][c]; 
+              }
+            }
+            // horizontal block scenarios
+            // one above pair is null // two above is board[r][c]
+            // one above is board[r][c] and two above is null
+            // one below is null // two below is board[r][c]
+            // one below is board[r][c] and two below is null
+          }
       }
      }
     }
@@ -321,6 +350,10 @@ class App extends React.Component {
       }
     }
   }
+
+  checkAlmostDiagonalRight(board) {
+    // TODO: create check for 3 in row diagonal right
+  }
   
   checkDiagonalLeft(board) {
     // Check only if row is 3 or greater AND column is 3 or greater
@@ -335,6 +368,10 @@ class App extends React.Component {
         }
       }
     }
+  }
+
+  checkAlmostDiagonalLeft(board) {
+    // TODO: create check for 3 in row diagonal left
   }
   
   checkDraw(board) {
@@ -352,7 +389,7 @@ class App extends React.Component {
   checkAlmost() {
     let board = this.state.board;
     return this.checkAlmostHorizontal(board) || this.checkAlmostVertical(board);
-    // || this.checkDiagonalRight(board) || this.checkDiagonalLeft(board) || 
+    // || this.checkAlmostDiagonalRight(board) || this.checkAlmostDiagonalLeft(board);
   }
   
   checkAll(board) {
