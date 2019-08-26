@@ -44,7 +44,7 @@ class App extends React.Component {
 
   computerMove = () => {
     let board = this.state.board;
-    let randomMove = Math.floor(Math.random() * 7);
+    let randomMove = Math.floor(Math.random() * 6);
     let firstCheck = this.checkAll(board);
     let secondCheck = this.checkAlmost(board);
     let blockingMoves = this.state.blockingMoves;
@@ -230,8 +230,14 @@ class App extends React.Component {
               blockingMoves.push({r:r, c:c+2});
               return board[r][c]; 
             } else if ((board[r][c+2] === board[r][c]) && (!board[r][c+3])) {
-              blockingMoves.push({r:r, c:c+3});
-              return board[r][c]; 
+              if (c <= 3) {
+                blockingMoves.push({r:r, c:c+3});
+                return board[r][c]; 
+              }
+              if (c === 4) {
+                blockingMoves.push({r:r, c:c-1});
+                return board[r][c]; 
+              }
             } else if (!board[r][c-1] && (board[r][c-2] === board[r][c])) {
               blockingMoves.push({r:r, c:c-1});
               return board[r][c]; 
@@ -240,7 +246,7 @@ class App extends React.Component {
               return board[r][c]; 
             }
             // horizontal block scenarios
-            // one above is null // two above is board[r][c]
+            // one above pair is null // two above is board[r][c]
             // one above is board[r][c] and two above is null
             // one below is null // two below is board[r][c]
             // one below is board[r][c] and two below is null
