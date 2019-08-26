@@ -15,7 +15,8 @@ class App extends React.Component {
       gameOver: false,
       message: '',
       player1: 1,
-      player2: 2
+      player2: 2,
+      winningMove: []
     };
   }
 
@@ -41,15 +42,26 @@ class App extends React.Component {
     });
   }
 
+  makeCounter = (() => {
+    let num = 0;
+    return () => num++;
+  })();
+
 
   computerMove = () => {
     let board = this.state.board;
-    let randomMove = Math.floor(Math.random() * 6);
+    // let randomMove = Math.floor(Math.random() * 6);
+
+    let randomMove = this.makeCounter();
+    
+ // TEST horiz win
     let firstCheck = this.checkAll(board);
     let secondCheck = this.checkAlmost(board);
     let blockingMoves = this.state.blockingMoves;
+    let winningMove = this.state.winningMove;
     
     console.log('blockingMoves', blockingMoves);
+    console.log('winningMove', winningMove);
     // check where row or col or diagonal has 3 pieces
     
     if (firstCheck === this.state.player1) {
@@ -58,7 +70,17 @@ class App extends React.Component {
     }  
 
     console.log('secondCheck', secondCheck);
+  if (secondCheck === this.state.player2) {
+    console.log('leettsss goooo!');
+    // if (!board[r][winningMove[0]['c']]) {
+    //    board[r][winningMove[0]['c']] = this.state.player2;
+    //  }
+  }
+
+
   if (secondCheck === this.state.player1) {
+
+
     BLOCK:
       for (let i=0; i<blockingMoves.length; i++) {
         if (blockingMoves[i]['c']) {
@@ -78,6 +100,7 @@ class App extends React.Component {
       this.setState({ blockingMoves:[], board, currentPlayer: this.togglePlayer() });
       return;
     } 
+
     // TODO: RANDOM COMPUTER MOVE
 
       for (let r = 5; r >= 0; r--) {
@@ -173,13 +196,20 @@ class App extends React.Component {
   checkAlmostVertical() {
     // Check only if row is 3 or greater
     let blockingMoves = this.state.blockingMoves;
+    let winningMove = this.state.winningMove;
     let board = this.state.board;
 
     for (let r = 3; r < 6; r++) {
       for (let c = 0; c < 7; c++) {
+
           if((board[r][c] === board[r-1][c]) && 
             (board[r-1][c] === board[r-2][c]) && 
-            !board[r-3][c] ) {
+            !board[r-3][c]) {
+             // vertical win scenario
+            if (board[r][c] === 2) {
+              winningMove.push({r:r-3, c:c});
+              return board[r][c];
+            } 
             // vertical block scenario
             if (board[r][c] === 1) {
               blockingMoves.push({r:r-3, c:c});
@@ -208,30 +238,54 @@ class App extends React.Component {
   checkAlmostHorizontal() {
     // Check only if column is 3 or less
     let blockingMoves = this.state.blockingMoves;
+    let winningMove = this.state.winningMove;
     let board = this.state.board;
 
     for (let r = 0; r < 6; r++) {
       for (let c = 0; c < 7; c++) {
-        if (board[r][c] && (board[r][c] === 1)) {
+       
           // checks for a horizontal pair
+          if(board[r][c]) {
           if(board[r][c] === board[r][c+1]) {
-            if( !board[r][c+2] && (board[r][c+3] === board[r][c])) {
-              blockingMoves.push({r:r, c:c+2});
+            if(!board[r][c+2] && (board[r][c+3] === board[r][c])) {
+              // put condition for winning move here
+              if (board[r][c] === 2) {
+                winningMove.push({r:r, c:c+2});
+              } else {
+                blockingMoves.push({r:r, c:c+2});
+              }
               return board[r][c]; 
-            } else if ((board[r][c+2] === board[r][c]) && (!board[r][c+3])) {
+            } else if ((board[r][c]) === board[r][c+2]  && (!board[r][c+3])) {
               if (c <= 3) {
-                blockingMoves.push({r:r, c:c+3});
+                if (board[r][c] === 2) {
+                  console.log('hey!');
+                  winningMove.push({r:r, c:c+3});
+                } else {
+                  blockingMoves.push({r:r, c:c+3});
+                }
                 return board[r][c]; 
               }
               if (c === 4) {
-                blockingMoves.push({r:r, c:c-1});
+                if (board[r][c] === 2) {
+                  winningMove.push({r:r, c:c-1});
+                } else {
+                  blockingMoves.push({r:r, c:c-1});
+                }
                 return board[r][c]; 
               }
             } else if (!board[r][c-1] && (board[r][c-2] === board[r][c])) {
-              blockingMoves.push({r:r, c:c-1});
+              if (board[r][c] === 2) {
+                winningMove.push({r:r, c:c-1})
+              } else {
+                blockingMoves.push({r:r, c:c-1});
+              }
               return board[r][c]; 
             } else if ((board[r][c-1] === board[r][c]) && !board[r][c-2]) {
-              blockingMoves.push({r:r, c:c-2});
+              if (board[r][c] === 2) {
+                winningMove.push({r:r, c:c-2});
+              } else {
+                blockingMoves.push({r:r, c:c-2});
+              }
               return board[r][c]; 
             }
             // horizontal block scenarios
@@ -248,10 +302,8 @@ class App extends React.Component {
           //     // blockingMoves.push({r: r, c: c+3});
           //   return board[r][c];
           // }
-
-
-        }
       }
+     }
     }
   }
   
@@ -299,7 +351,7 @@ class App extends React.Component {
   // TODO: modify this so prioritizes returning 2 for a possible computer win
   checkAlmost() {
     let board = this.state.board;
-    return this.checkAlmostVertical(board) || this.checkAlmostHorizontal(board);
+    return this.checkAlmostHorizontal(board) || this.checkAlmostVertical(board);
     // || this.checkDiagonalRight(board) || this.checkDiagonalLeft(board) || 
   }
   
